@@ -76,6 +76,7 @@ export class Surakarta {
      * @param {number} cd - final position column
      * @param {boolean} [noRespond=false] - whether not to consider this a
      *  turning move, e.g. increment the current turn.
+     * @param {boolean} capture - is this a capture move?
      * @throws if destination is already filled
      */
     step (rs, cs, rd, cd, noRespond = false, capture = false) {
@@ -125,6 +126,9 @@ export class Surakarta {
             (Directions.isVertical(dir) && (c === 0 || c === 5))) {
             throw new Error(`${r}${c} cannot be looped in direction ${dir}, ends at corner`)
         }
+        if (this.states[this.indexOf(r, c)] !== this.turnPlayer) {
+            throw new Error("Not turning player's pebble")
+        }
 
         const traverseStep = function (r, c, dir) {
             switch (dir) {
@@ -151,11 +155,15 @@ export class Surakarta {
         const end = new Array(2)
         const pebble = this.states[this.indexOf(r, c)]
         const steps = saveSteps ? [] : true
+        let selfTouch = 0
+        let loops = 0
+        let cutFound = false
 
         while (true) {
             let next = traverseStep(r, c, dir)
 
             if (!next) {
+                ++loops
                 next = loopStep(r, c)
                 dir = next[2]
             }
@@ -163,28 +171,42 @@ export class Surakarta {
             r = next[0]
             c = next[1]
 
+            let self = false
             if (r === start[0] && c === start[1]) {
-                return false // Infinite loop
+                ++selfTouch
+                if (selfTouch > 1) {
+                    return false // Infinite loop
+                }
+                self = true
             }
 
             const state = this.states[this.indexOf(r, c)]
 
-            if (state === pebble) {
-                return false // Can't move since no capture
+            if (!self && state === pebble) {
+                return false // can't capture our own pebble :)
             }
             if (saveSteps) {
                 steps.push([r, c])
+
+                if (next.length === 3) { // loop
+                    steps[steps.length - 1].isLoop = true
+                }
             }
-            if ((cut && cut[0] === r && cut[1] === c) || state !== NOT_FILLED) {
+            if ((cut && cut[0] === r && cut[1] === c) || (!self && state !== NOT_FILLED)) {
+                cutFound = (state === NOT_FILLED) // landed optional intermediate if current position not filled
                 end[0] = r
                 end[1] = c
                 break
             }
         }
 
+        if (loops === 0) {
+            return false
+        }
         if (perform) {
             this.step(start[0], start[1], end[0], end[1], noRespond, true)
         }
+        steps.isCapture = !cutFound
         return steps
     }
 

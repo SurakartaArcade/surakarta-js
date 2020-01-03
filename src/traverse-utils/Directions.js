@@ -15,6 +15,17 @@ export default {
         return d === UP || d === DOWN
     },
     of: function (start, end) {
+        if (end[1] > 5) {
+            return RIGHT
+        } else if (end[1] < 0) {
+            return LEFT
+        }
+        if (end[0] > 5) {
+            return DOWN
+        } else if (end[0] < 0) {
+            return UP
+        }
+
         const r = end[0] - start[0]
         const c = end[1] - start[1]
 
