@@ -1,6 +1,6 @@
 {
   "name": "surakarta",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Implementation of the Surakarta game",
   "main": "lib/index.js",
   "scripts": {
@@ -9,6 +9,7 @@
     "publish": "npm run build;"
   },
   "author": "Shukant Pal",
+  "repository": "https://github.com/SurakartaArcade/surkarta-js",
   "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.7.7",
