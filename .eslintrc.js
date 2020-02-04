@@ -1,10 +1,12 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true
+    es6: true,
+    mocha: true
   },
   extends: [
-    'standard'
+    'standard',
+    'plugin:mocha/recommended'
   ],
   globals: {
     Atomics: 'readonly',
@@ -17,5 +19,8 @@ module.exports = {
   },
   rules: {
       indent: ['error', 4]
-  }
+  },
+  plugins: [
+      'mocha'
+  ]
 }

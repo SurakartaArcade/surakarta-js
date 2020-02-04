@@ -1,8 +1,13 @@
-import Directions, { LEFT, UP, RIGHT, DOWN } from './Directions'
-import { getLoopRadius } from './getLoopRadius'
-import { getLoopRotation } from './getLoopRotation'
-import { getLoopTangent } from './getLoopTangent'
-import { getLoopTerminal } from './getLoopTerminal'
+import Directions, {
+    LEFT, UP, RIGHT, DOWN
+} from './Directions'
+
+import {
+    getLoopRadius,
+    getLoopRotation,
+    getLoopTangent,
+    getLoopTerminal
+} from './loop-info'
 
 export {
     Directions, LEFT, UP, RIGHT, DOWN,
@@ -11,6 +16,8 @@ export {
     getLoopTangent,
     getLoopTerminal
 }
+
+export * from './path-finder'
 
 export default {
     getLoopRadius,

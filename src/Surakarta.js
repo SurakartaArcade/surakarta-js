@@ -1,4 +1,6 @@
-import TraverseUtils, { LEFT, UP, RIGHT, DOWN, Directions } from './traverse-utils'
+import EventEmitter from 'eventemitter3'
+import TraverseUtils, { LEFT, UP, RIGHT, DOWN, Directions, findPath } from './traverse-utils'
+import PlayerStats from './PlayerStats'
 import { validateStep } from './step-utils'
 
 export const NOT_FILLED = -1
@@ -8,13 +10,15 @@ export const BLACK_PLAYER = 1 // other player
 /**
  * Handle the state of an actual Surakarta game.
  */
-export class Surakarta {
+export class Surakarta extends EventEmitter {
     /**
      * Constructs a Surakarta board state with the pebbles in their initial
      * positions.
      * @param {boolean} [noInit=false] - whether not to initialize the board
      */
     constructor (noInit = false) {
+        super()
+
         /**
          * States of each pebble position.
          * @member {Array<number>}
@@ -36,6 +40,15 @@ export class Surakarta {
          */
         this.responders = [[], [], []]
 
+        /**
+         * Stats for the red & black player.
+         * @member {{ red: PlayerStats, black: PlayerStats }}
+         */
+        this.playerStats = {
+            red: new PlayerStats(),
+            black: new PlayerStats()
+        }
+
         if (!noInit) {
             for (let i = 0; i < 12; i++) {
                 this.states[i] = RED_PLAYER
@@ -46,6 +59,9 @@ export class Surakarta {
             for (let i = 24; i < 36; i++) {
                 this.states[i] = BLACK_PLAYER
             }
+
+            this.playerStats.red.pebbles = 12
+            this.playerStats.black.pebbles = 12
         }
     }
 
@@ -59,6 +75,14 @@ export class Surakarta {
         return r * 6 + c
     }
 
+    state (row, column) {
+        if (row < 0 || column < 0 || row >= 6 || column >= 6) {
+            return null
+        }
+
+        return this.states[row * 6 + column]
+    }
+
     /**
      * The player whose turn it is currently.
      * @member {number}
@@ -68,8 +92,19 @@ export class Surakarta {
     }
 
     /**
+     * @member {'red' | 'black'}
+     */
+    get turnPlayerColor () {
+        return this.turnPlayer === 0 ? 'red' : 'black'
+    }
+
+    /**
      * Perform a simple move on the board. Only validation that occurs is if the
      * destination is already filled or if it isn't the pebble's turn.
+     *
+     * _If the game is finished due to this move_: The responders will not be notified,
+     * rather the 'gameover' event is emitted.
+     *
      * @param {number} rs - initial position row
      * @param {number} cs - intial position column
      * @param {number} rd - final position row
@@ -90,12 +125,25 @@ export class Surakarta {
             throw new Error('Cannot step into destination since it is already filled')
         }
 
+        capture = this.states[id] !== NOT_FILLED
+
         this.states[id] = this.states[is]
         this.states[is] = NOT_FILLED
 
         if (!noRespond) {
-            this.turn++
-            this._notifyRespondersOnTurn()
+            let color
+
+            if (capture) {
+                color = this.turnPlayerColor
+                --this.playerStats[color].pebbles
+            }
+
+            if (capture && this.playerStats[color].pebbles <= 0) {
+                this.emit('gameover', color)
+            } else {
+                this.turn++
+                this._notifyRespondersOnTurn()
+            }
         }
     }
 
@@ -112,7 +160,7 @@ export class Surakarta {
     }
 
     /**
-     * Perform a traversing move
+     * Perform an attack move
      * @param {number} r - starting row
      * @param {number} c - starting col
      * @param {number} dir - direction of traversing
@@ -130,83 +178,13 @@ export class Surakarta {
             throw new Error("Not turning player's pebble")
         }
 
-        const traverseStep = function (r, c, dir) {
-            switch (dir) {
-            case UP: {
-                if (r !== 0) return [r - 1, c]
-                break
-            }
-            case LEFT: {
-                if (c !== 0) return [r, c - 1]
-                break
-            }
-            case DOWN: {
-                if (r !== 5) return [r + 1, c]
-                break
-            }
-            case RIGHT:
-                if (c !== 5) return [r, c + 1]
+        const steps = findPath(this, r, c, dir, cut, !saveSteps && !perform)
 
-                return null
-            }
-        }
-        const loopStep = TraverseUtils.getLoopTerminal
-        const start = [r, c]
-        const end = new Array(2)
-        const pebble = this.states[this.indexOf(r, c)]
-        const steps = saveSteps ? [] : true
-        let selfTouch = 0
-        let loops = 0
-        let cutFound = false
-
-        while (true) {
-            let next = traverseStep(r, c, dir)
-
-            if (!next) {
-                ++loops
-                next = loopStep(r, c)
-                dir = next[2]
-            }
-
-            r = next[0]
-            c = next[1]
-
-            let self = false
-            if (r === start[0] && c === start[1]) {
-                ++selfTouch
-                if (selfTouch > 1) {
-                    return false // Infinite loop
-                }
-                self = true
-            }
-
-            const state = this.states[this.indexOf(r, c)]
-
-            if (!self && state === pebble) {
-                return false // can't capture our own pebble :)
-            }
-            if (saveSteps) {
-                steps.push([r, c])
-
-                if (next.length === 3) { // loop
-                    steps[steps.length - 1].isLoop = true
-                }
-            }
-            if ((cut && cut[0] === r && cut[1] === c) || (!self && state !== NOT_FILLED)) {
-                cutFound = (state === NOT_FILLED) // landed optional intermediate if current position not filled
-                end[0] = r
-                end[1] = c
-                break
-            }
-        }
-
-        if (loops === 0) {
-            return false
-        }
         if (perform) {
-            this.step(start[0], start[1], end[0], end[1], noRespond, true)
+            const lastPosition = steps[steps.length - 1]
+            this.step(r, c, lastPosition.row, lastPosition.column, noRespond, true)
         }
-        steps.isCapture = !cutFound
+
         return steps
     }
 
@@ -246,6 +224,29 @@ export class Surakarta {
         this.responders[2].forEach(responder => responder.onTurn())
         this.responders[this.turnPlayer].forEach(responder => responder.onTurn())
     }
+}
+
+/**
+ * Generate a `Surakarta` instance with a predefined layout.
+ *
+ * @static
+ * @param {Array<int>} states
+ * @returns {Surakarta}
+ */
+Surakarta.fromState = function (states) {
+    const instance = new Surakarta(true)
+
+    for (let i = 0; i < 36; i++) {
+        instance.states[i] = states[i]
+
+        if (states[i] === RED_PLAYER) {
+            ++instance.playerStats.red.pebbles
+        } else if (states[i] === BLACK_PLAYER) {
+            ++instance.playerStats.black.pebbles
+        }
+    }
+
+    return instance
 }
 
 /**

@@ -3,11 +3,22 @@ export const UP = 11
 export const RIGHT = 12
 export const DOWN = 13
 
+export const Directions = {
+    LEFT, UP, RIGHT, DOWN
+}
+
 export default {
     LEFT,
     UP,
     RIGHT,
     DOWN,
+    Directions,
+    get TOP () {
+        throw new Error('Directions.TOP is invalid. Use Directions.UP')
+    },
+    get BOTTOM () {
+        throw new Error('Directions.BOTTOM is invalid. Use Directions.DOWN')
+    },
     isHorizontal: function (d) {
         return d === LEFT || d === RIGHT
     },

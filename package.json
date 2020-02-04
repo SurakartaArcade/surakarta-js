@@ -1,11 +1,11 @@
 {
   "name": "surakarta",
-  "version": "1.1",
+  "version": "1.2.0",
   "description": "Implementation of the Surakarta game",
   "main": "lib/index.js",
   "scripts": {
     "build": "babel src -d lib",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build; mocha;",
     "publish": "npm run build;"
   },
   "author": "Shukant Pal",
@@ -16,11 +16,17 @@
     "@babel/core": "^7.7.7",
     "@babel/preset-env": "^7.7.7",
     "babel-eslint": "^10.0.3",
+    "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-mocha": "^6.2.2",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1"
+    "eslint-plugin-standard": "^4.0.1",
+    "mocha": "^7.0.0"
+  },
+  "dependencies": {
+    "eventemitter3": "^4.0.0"
   }
 }
