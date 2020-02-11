@@ -72,6 +72,7 @@ export function findStep (row, column, direction) {
         loopStep.row = loopStep[0]
         loopStep.column = loopStep[1]
         loopStep.direction = loopStep[2]
+        loopStep.isLoop = true
         return loopStep
     }
 }
@@ -91,7 +92,7 @@ export function findPath (surakarta, row, column, direction, cut, findPossiblity
     const pebble = surakarta.states[surakarta.indexOf(row, column)]
     const steps = findPossiblity ? true : []
     let selfTouch = 0
-    const loops = 0
+    let loops = 0
     let cutFound = false
 
     while (true) {
@@ -99,6 +100,10 @@ export function findPath (surakarta, row, column, direction, cut, findPossiblity
 
         row = next[0]
         column = next[1]
+
+        if (next.isLoop) {
+            direction = next.direction
+        }
 
         let self = false
         if (row === start[0] && column === start[1]) {
@@ -118,6 +123,7 @@ export function findPath (surakarta, row, column, direction, cut, findPossiblity
             steps.push(next)
 
             if (next.length === 3) { // loop
+                ++loops
                 steps[steps.length - 1].isLoop = true
             }
         }

@@ -203,6 +203,16 @@ export class Surakarta extends EventEmitter {
         }
     }
 
+    copyTo (surakarta) {
+        for (let i = 0; i < 36; i++) {
+            surakarta.states[i] = this.states[i]
+        }
+    }
+
+    copyFrom (surakarta) {
+        surakarta.copyTo(this)
+    }
+
     /**
      * Clone this instance without the responders.
      *

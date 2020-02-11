@@ -1,12 +1,12 @@
 {
   "name": "surakarta",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "description": "Implementation of the Surakarta game",
   "main": "lib/index.js",
   "scripts": {
     "build": "babel src -d lib",
     "test": "npm run build; mocha;",
-    "publish": "npm run build;"
+    "prepublishOnly": "npm run build;"
   },
   "author": "Shukant Pal",
   "repository": "https://github.com/SurakartaArcade/surkarta-js",
