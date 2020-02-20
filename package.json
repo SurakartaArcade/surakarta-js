@@ -1,10 +1,10 @@
 {
   "name": "surakarta",
-  "version": "1.3.1",
+  "version": "1.3.3",
   "description": "Implementation of the Surakarta game",
   "main": "lib/index.js",
   "scripts": {
-    "build": "babel src -d lib",
+    "build": "babel src -d lib && npm link",
     "test": "npm run build; mocha;",
     "prepublishOnly": "npm run build;"
   },
