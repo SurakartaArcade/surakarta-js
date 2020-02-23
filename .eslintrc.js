@@ -5,8 +5,8 @@ module.exports = {
     mocha: true
   },
   extends: [
-    'standard',
-    'plugin:mocha/recommended'
+    'plugin:mocha/recommended',
+    'plugin:prettier/recommended'
   ],
   globals: {
     Atomics: 'readonly',
@@ -17,10 +17,8 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  rules: {
-      indent: ['error', 4]
-  },
   plugins: [
-      'mocha'
+    'mocha',
+    'prettier'
   ]
 }

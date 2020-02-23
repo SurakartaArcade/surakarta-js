@@ -1,83 +1,111 @@
+// @flow
+
 /**
  * Represents a move that can be made in Surakarta.
  */
 export class Move {
-    constructor (srcRow = 0, srcColumn = 0, dstRow = 0, dstColumn = 0, isAttack = false, direction = -1) {
-        /**
-         * Row of source/starting position.
-         * @member {number}
-         */
-        this.srcRow = srcRow
+  srcRow: number;
+  srcColumn: number;
+  dstRow: number;
+  dstColumn: number;
+  isAttack: boolean;
+  direction: number;
 
-        /**
-         * Column of source/starting position.
-         * @member {number}
-         */
-        this.srcColumn = srcColumn
-
-        /**
-         * Row of destination/final position.
-         * @member {number}
-         */
-        this.dstRow = dstRow
-
-        /**
-         * Column of destination/final position.
-         * @member {number}
-         */
-        this.dstColumn = dstColumn
-
-        /**
-         * Whether this move is an attack (need not be a capture).
-         * @member {boolean}
-         */
-        this.isAttack = isAttack
-
-        /**
-         * Starting direction, if attack move
-         * @member {Direction}
-         */
-        this.direction = direction
-    }
-
-    makeAttack (direction) {
-        this.isAttack = true
-        this.direction = direction
-    }
+  constructor(
+    srcRow: number = 0,
+    srcColumn: number = 0,
+    dstRow: number = 0,
+    dstColumn: number = 0,
+    isAttack: boolean = false,
+    direction: number = -1
+  ) {
+    /**
+     * Row of source/starting position.
+     * @member {number}
+     */
+    this.srcRow = srcRow;
 
     /**
-     * @param {number} row
-     * @param {number} column
+     * Column of source/starting position.
+     * @member {number}
      */
-    setSource (row, column) {
-        this.srcRow = row
-        this.srcColumn = column
-    }
+    this.srcColumn = srcColumn;
 
     /**
-     * @param {number} row
-     * @param {number} column
+     * Row of destination/final position.
+     * @member {number}
      */
-    setDestination (row, column) {
-        this.dstRow = row
-        this.dstColumn = column
-        return this
-    }
+    this.dstRow = dstRow;
 
     /**
-     * Generate an exact copy of this move.
-     * @returns {Move}
+     * Column of destination/final position.
+     * @member {number}
      */
-    clone () {
-        return new Move(
-            this.srcRow,
-            this.srcColumn,
-            this.dstRow,
-            this.dstColumn,
-            this.isAttack,
-            this.direction
-        )
-    }
+    this.dstColumn = dstColumn;
+
+    /**
+     * Whether this move is an attack (need not be a capture).
+     * @member {boolean}
+     */
+    this.isAttack = isAttack;
+
+    /**
+     * Starting direction, if attack move
+     * @member {Direction}
+     */
+    this.direction = direction;
+  }
+
+  makeAttack(direction: number) {
+    this.isAttack = true;
+    this.direction = direction;
+  }
+
+  /**
+   * @param {number} row
+   * @param {number} column
+   */
+  setSource(row: number, column: number) {
+    this.srcRow = row;
+    this.srcColumn = column;
+  }
+
+  /**
+   * @param {number} row
+   * @param {number} column
+   */
+  setDestination(row: number, column: number) {
+    this.dstRow = row;
+    this.dstColumn = column;
+    return this;
+  }
+
+  /**
+   * Generate an exact copy of this move.
+   * @returns {Move}
+   */
+  clone(): Move {
+    return Move.postThreadBoundary(this);
+  }
+
+  /**
+   * Repairs a {@code Move} object after it has been copied through a
+   * web-worker boundary.
+   *
+   * @param {Move} move
+   */
+  static postThreadBoundary(move: Move): Move {
+    const cmove = new Move();
+
+    cmove.srcRow = move.srcRow;
+    cmove.srcColumn = move.srcColumn;
+    cmove.dstRow = move.dstRow;
+    cmove.dstColumn = move.dstColumn;
+    cmove.isAttack = move.isAttack;
+    cmove.direction = move.direction;
+
+    return cmove;
+  }
 }
 
-export default Move
+export default Move;
