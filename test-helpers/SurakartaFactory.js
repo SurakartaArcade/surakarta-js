@@ -1,4 +1,4 @@
-const { Surakarta } = require("../../lib/Surakarta");
+const { Surakarta, NOT_FILLED } = require("../lib/Surakarta");
 
 /**
  * An instruction that tells {@code writeSurakarta} what to write into the
@@ -24,11 +24,15 @@ const { Surakarta } = require("../../lib/Surakarta");
  * Writes a {@code SK.Surakarta} game state based off the array of instructions
  * given (in order).
  *
- * @param {FactoryInstr} inst - instructions for building the game state
+ * @param {Array<FactoryInstr>} inst - instructions for building the game state
  * @returns {SK.Surakarta} built game state
  */
-export function writeSurakarta(inst) {
-  const mockSurakarta = new Surakarta();
+exports.writeSurakarta = function(inst) {
+  const mockSurakarta = new Surakarta(true);
+
+  for (let i = 0; i < 36; i++) {
+    mockSurakarta.states[i] = NOT_FILLED;
+  }
 
   for (let i = 0; i < inst.length; i++) {
     const el = inst[i];
@@ -49,4 +53,4 @@ export function writeSurakarta(inst) {
   }
 
   return mockSurakarta;
-}
+};
