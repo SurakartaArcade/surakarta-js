@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/SurakartaArcade/Surakarta/_apis/build/status/SurakartaArcade.surakarta-js?branchName=master)](https://dev.azure.com/SurakartaArcade/Surakarta/_build/latest?definitionId=1&branchName=master)
+
 # Surakarta (JavaScript implementation)
 
 This is a "stateful" library for managing Surakarta games in JavaScript projects.
